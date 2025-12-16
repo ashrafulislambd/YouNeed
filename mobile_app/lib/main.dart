@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'theme_provider.dart';
 import 'transaction/transaction_screen.dart';
 import 'auth/register_screen.dart';
+import 'auth/login_screen.dart';
 import 'credit/credit_screen.dart';
 import 'screens/due_payment_dashboard.dart';
 import 'screens/kyc_screen.dart';
@@ -58,6 +59,7 @@ class YouNeedApp extends StatelessWidget {
           routes: {
             '/': (context) => const TransactionScreen(),
             '/register': (context) => const RegisterScreen(),
+            '/login': (context) => const LoginScreen(),
             '/credit': (context) => const CreditScreen(),
             '/due-payment': (context) => const DuePaymentDashboard(),
             '/kyc': (context) => const KycScreen(),

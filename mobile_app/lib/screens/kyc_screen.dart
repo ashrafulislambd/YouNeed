@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import '../services/kyc_service.dart';
 
 class KycScreen extends StatefulWidget {
   const KycScreen({super.key});
@@ -8,6 +11,123 @@ class KycScreen extends StatefulWidget {
 }
 
 class _KycScreenState extends State<KycScreen> {
+  final KYCService _kycService = KYCService();
+  final ImagePicker _picker = ImagePicker();
+  
+  File? _selectedImage;
+  String _documentType = 'NID';
+  final _documentNumberController = TextEditingController();
+  bool _isLoading = false;
+  bool _isSubmitting = false;
+  Map<String, dynamic>? _kycStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadKYCStatus();
+  }
+
+  @override
+  void dispose() {
+    _documentNumberController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadKYCStatus() async {
+    setState(() => _isLoading = true);
+    final result = await _kycService.getKYCStatus();
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        if (result['success'] == true) {
+          _kycStatus = result['data'];
+        }
+      });
+    }
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to pick image: ${e.toString()}'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _submitKYC() async {
+    if (_selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a document image'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    if (_documentNumberController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter document number'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    final result = await _kycService.submitKYC(
+      type: _documentType,
+      documentNumber: _documentNumberController.text,
+      imageFile: _selectedImage!,
+    );
+
+    if (mounted) {
+      setState(() => _isSubmitting = false);
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'KYC submitted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Reload status
+        _loadKYCStatus();
+        // Clear form
+        setState(() {
+          _selectedImage = null;
+          _documentNumberController.clear();
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'KYC submission failed'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -117,58 +237,124 @@ class _KycScreenState extends State<KycScreen> {
             const SizedBox(height: 32),
             
             // Status Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isDark 
-                      ? [Colors.orange.withOpacity(0.15), Colors.orange.withOpacity(0.05)]
-                      : [Colors.orange.withOpacity(0.1), Colors.orange.withOpacity(0.05)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (_kycStatus != null)
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: _getStatusColors(_kycStatus!['status'] ?? 'PENDING', isDark),
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: _getStatusColor(_kycStatus!['status'] ?? 'PENDING').withOpacity(isDark ? 0.3 : 0.2)),
                 ),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.orange.withOpacity(isDark ? 0.3 : 0.2)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: cardColor,
-                      shape: BoxShape.circle,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _getStatusIcon(_kycStatus!['status'] ?? 'PENDING'),
+                        color: _getStatusColor(_kycStatus!['status'] ?? 'PENDING'),
+                      ),
                     ),
-                    child: const Icon(Icons.pending_actions_rounded, color: Colors.orange),
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Status',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark ? Colors.white60 : Colors.black54,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Status',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDark ? Colors.white60 : Colors.black54,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            _kycStatus!['status'] ?? 'Unknown',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: _getStatusColor(_kycStatus!['status'] ?? 'PENDING'),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (_kycStatus!['clarification'] != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                _kycStatus!['clarification'],
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isDark ? Colors.white70 : Colors.black54,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                      const Text(
-                        'Pending Submission',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.deepOrange,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                    ),
+                  ],
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark 
+                        ? [Colors.orange.withOpacity(0.15), Colors.orange.withOpacity(0.05)]
+                        : [Colors.orange.withOpacity(0.1), Colors.orange.withOpacity(0.05)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                ],
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.orange.withOpacity(isDark ? 0.3 : 0.2)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.pending_actions_rounded, color: Colors.orange),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Status',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark ? Colors.white60 : Colors.black54,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const Text(
+                          'Not Submitted',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.deepOrange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
             
             const SizedBox(height: 32),
             Text(
-              'Required Documents',
+              'Submit Document',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -177,41 +363,137 @@ class _KycScreenState extends State<KycScreen> {
             ),
             const SizedBox(height: 16),
             
-            _buildUploadCard(
-              title: 'National ID / Passport',
-              description: 'Scan front and back side',
-              icon: Icons.badge_outlined,
-              isUploaded: true,
-              isDark: isDark,
-              cardColor: cardColor,
-              textColor: textColor,
+            // Document Type Selector
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark ? Colors.black.withOpacity(0.3) : Colors.grey.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Document Type',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildDocumentTypeButton('NID', 'National ID', Icons.badge_outlined, isDark, cardColor, textColor),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildDocumentTypeButton('PASSPORT', 'Passport', Icons.card_travel_outlined, isDark, cardColor, textColor),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _documentNumberController,
+                    decoration: InputDecoration(
+                      labelText: 'Document Number',
+                      labelStyle: TextStyle(color: isDark ? Colors.white60 : Colors.black45),
+                      filled: true,
+                      fillColor: isDark ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.05),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    style: TextStyle(color: textColor),
+                  ),
+                ],
+              ),
             ),
-            _buildUploadCard(
-              title: 'Utility Bill',
-              description: 'Recent electricity or gas bill',
-              icon: Icons.receipt_long_outlined,
-              isUploaded: false,
-              isDark: isDark,
-              cardColor: cardColor,
-              textColor: textColor,
-            ),
-             _buildUploadCard(
-              title: 'Face Verification',
-              description: 'Take a clear selfie',
-              icon: Icons.face_retouching_natural_outlined,
-              isUploaded: false,
-              isDark: isDark,
-              cardColor: cardColor,
-              textColor: textColor,
+            
+            const SizedBox(height: 16),
+            
+            // Image Picker
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDark ? Colors.white24 : Colors.grey.withOpacity(0.2),
+                    style: BorderStyle.solid,
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark ? Colors.black.withOpacity(0.3) : Colors.grey.withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    if (_selectedImage != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(
+                          _selectedImage!,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    else
+                      Column(
+                        children: [
+                          Icon(
+                            Icons.cloud_upload_outlined,
+                            size: 48,
+                            color: isDark ? Colors.white38 : Colors.grey[400],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Tap to select document image',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: textColor,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'JPG, PNG (Max 5MB)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark ? Colors.white38 : Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
             ),
 
-            const SizedBox(height: 40),
+            
+            const SizedBox(height: 24),
             
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: _isSubmitting ? null : _submitKYC,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isDark ? Colors.white : Colors.black,
                   foregroundColor: isDark ? Colors.black : Colors.white,
@@ -220,19 +502,103 @@ class _KycScreenState extends State<KycScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'Submit Application',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Submit KYC Application',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildDocumentTypeButton(String type, String label, IconData icon, bool isDark, Color cardColor, Color textColor) {
+    final isSelected = _documentType == type;
+    return GestureDetector(
+      onTap: () => setState(() => _documentType = type),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isDark ? Colors.white : Colors.black)
+              : (isDark ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.05)),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? (isDark ? Colors.white : Colors.black)
+                : (isDark ? Colors.white24 : Colors.grey.withOpacity(0.2)),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: isSelected
+                  ? (isDark ? Colors.black : Colors.white)
+                  : textColor,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isSelected
+                    ? (isDark ? Colors.black : Colors.white)
+                    : textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'APPROVED':
+        return Colors.green;
+      case 'REJECTED':
+        return Colors.red;
+      case 'PENDING':
+      default:
+        return Colors.orange;
+    }
+  }
+
+  List<Color> _getStatusColors(String status, bool isDark) {
+    final color = _getStatusColor(status);
+    return isDark
+        ? [color.withOpacity(0.15), color.withOpacity(0.05)]
+        : [color.withOpacity(0.1), color.withOpacity(0.05)];
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'APPROVED':
+        return Icons.check_circle_outline_rounded;
+      case 'REJECTED':
+        return Icons.cancel_outlined;
+      case 'PENDING':
+      default:
+        return Icons.pending_actions_rounded;
+    }
   }
 
   Widget _buildUploadCard({
