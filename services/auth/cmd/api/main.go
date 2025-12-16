@@ -12,6 +12,7 @@ import (
 	"auth/internal/middleware"
 	"auth/internal/repository"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -40,7 +41,7 @@ func main() {
 
 	db := client.Database(cfg.DBName)
 	userRepo := repository.NewUserRepository(db)
-	
+
 	// Ensure indices
 	if err := userRepo.EnsureIndices(ctx); err != nil {
 		log.Printf("Warning: Failed to ensure indices: %v", err)
@@ -52,6 +53,16 @@ func main() {
 
 	// Setup Router
 	r := gin.Default()
+
+	// Enable CORS
+	r.Use(cors.New(cors.Config{
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: false,
+	}))
+
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})

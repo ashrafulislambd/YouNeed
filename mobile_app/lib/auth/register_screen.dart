@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -71,23 +72,40 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       
       setState(() => _isLoading = true);
       
-      // Simulate network delay
-      print('Registering: Name=${_nameController.text}, Email=${_emailController.text}, Phone=${_phoneController.text}, NID=${_nidController.text}');
-      await Future.delayed(const Duration(milliseconds: 1500));
+      // Call real auth API
+      final authService = AuthService();
+      final result = await authService.register(
+        name: _nameController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
       
       if (mounted) {
         setState(() => _isLoading = false);
-        // Show success
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Registration Successful!'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
-        // Navigate to due payment dashboard
-        Navigator.pushReplacementNamed(context, '/due-payment');
+        
+        if (result['success'] == true) {
+          // Show success
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Registration Successful!'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+          // Navigate to due payment dashboard
+          Navigator.pushReplacementNamed(context, '/due-payment');
+        } else {
+          // Show error
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Registration failed'),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        }
       }
     }
   }
@@ -431,8 +449,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                 ),
                                 TextButton(
                                   onPressed: () {
-                                    // Navigate to login
-                                    // Navigator.pushNamed(context, '/login'); 
+                                    Navigator.pushNamed(context, '/login');
                                   },
                                   child: Text(
                                     'Login',
