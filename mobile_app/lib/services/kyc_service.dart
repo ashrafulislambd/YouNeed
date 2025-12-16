@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'api_config.dart';
 import 'auth_service.dart';
@@ -12,7 +12,8 @@ class KYCService {
   Future<Map<String, dynamic>> submitKYC({
     required String type, // "NID" or "PASSPORT"
     required String documentNumber,
-    required File imageFile,
+    required Uint8List imageBytes,
+    required String filename,
   }) async {
     try {
       final token = await _authService.getToken();
@@ -36,14 +37,11 @@ class KYCService {
       request.fields['type'] = type;
       request.fields['document_number'] = documentNumber;
 
-      // Add image file
-      var stream = http.ByteStream(imageFile.openRead());
-      var length = await imageFile.length();
-      var multipartFile = http.MultipartFile(
+      // Add image file from bytes
+      var multipartFile = http.MultipartFile.fromBytes(
         'images',
-        stream,
-        length,
-        filename: imageFile.path.split('/').last,
+        imageBytes,
+        filename: filename,
       );
       request.files.add(multipartFile);
 

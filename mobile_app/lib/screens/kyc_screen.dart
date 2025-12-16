@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/kyc_service.dart';
@@ -14,7 +13,7 @@ class _KycScreenState extends State<KycScreen> {
   final KYCService _kycService = KYCService();
   final ImagePicker _picker = ImagePicker();
   
-  File? _selectedImage;
+  XFile? _selectedImage;
   String _documentType = 'NID';
   final _documentNumberController = TextEditingController();
   bool _isLoading = false;
@@ -57,7 +56,7 @@ class _KycScreenState extends State<KycScreen> {
       
       if (image != null) {
         setState(() {
-          _selectedImage = File(image.path);
+          _selectedImage = image;
         });
       }
     } catch (e) {
@@ -95,10 +94,14 @@ class _KycScreenState extends State<KycScreen> {
 
     setState(() => _isSubmitting = true);
 
+    // Read bytes from XFile
+    final bytes = await _selectedImage!.readAsBytes();
+    
     final result = await _kycService.submitKYC(
       type: _documentType,
       documentNumber: _documentNumberController.text,
-      imageFile: _selectedImage!,
+      imageBytes: bytes,
+      filename: _selectedImage!.name,
     );
 
     if (mounted) {
@@ -447,8 +450,8 @@ class _KycScreenState extends State<KycScreen> {
                     if (_selectedImage != null)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.file(
-                          _selectedImage!,
+                        child: Image.network(
+                          _selectedImage!.path,
                           height: 200,
                           width: double.infinity,
                           fit: BoxFit.cover,
