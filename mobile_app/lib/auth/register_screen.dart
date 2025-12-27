@@ -23,6 +23,9 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _acceptedTerms = false;
+  String _selectedPhoneCode = '+880'; // Default to Bangladesh
+  double _passwordStrength = 0.0;
+  String _passwordStrengthText = '';
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -42,6 +45,57 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       CurvedAnimation(parent: _animationController, curve: const Interval(0.0, 0.6, curve: Curves.easeOut)),
     );
     _animationController.forward();
+    
+    // Add listener to password controller for strength calculation
+    _passwordController.addListener(_updatePasswordStrength);
+  }
+
+  void _updatePasswordStrength() {
+    setState(() {
+      final password = _passwordController.text;
+      _passwordStrength = _calculatePasswordStrength(password);
+      _passwordStrengthText = _getPasswordStrengthText(_passwordStrength);
+    });
+  }
+
+  double _calculatePasswordStrength(String password) {
+    if (password.isEmpty) return 0.0;
+    
+    double strength = 0.0;
+    
+    // Length check (minimum 6, bonus for longer)
+    if (password.length >= 6) strength += 0.25;
+    if (password.length >= 8) strength += 0.15;
+    if (password.length >= 12) strength += 0.1;
+    
+    // Has uppercase
+    if (password.contains(RegExp(r'[A-Z]'))) strength += 0.2;
+    
+    // Has lowercase
+    if (password.contains(RegExp(r'[a-z]'))) strength += 0.1;
+    
+    // Has numbers
+    if (password.contains(RegExp(r'[0-9]'))) strength += 0.2;
+    
+    // Has symbols
+    if (password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) strength += 0.2;
+    
+    return strength.clamp(0.0, 1.0);
+  }
+
+  String _getPasswordStrengthText(double strength) {
+    if (strength == 0) return '';
+    if (strength < 0.3) return 'Weak';
+    if (strength < 0.6) return 'Fair';
+    if (strength < 0.8) return 'Good';
+    return 'Strong';
+  }
+
+  Color _getPasswordStrengthColor(double strength) {
+    if (strength < 0.3) return Colors.red;
+    if (strength < 0.6) return Colors.orange;
+    if (strength < 0.8) return Colors.yellow;
+    return Colors.green;
   }
 
   @override
@@ -280,15 +334,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                             ),
                             const SizedBox(height: 20),
 
-                            _buildTextField(
-                              context: context,
-                              controller: _phoneController,
-                              label: 'Phone Number',
-                              icon: Icons.phone_android_rounded,
-                              isDark: isDark,
-                              keyboardType: TextInputType.phone,
-                              validator: (v) => v!.isEmpty ? 'Phone number is required' : null,
-                            ),
+                            _buildPhoneField(context, isDark),
                             const SizedBox(height: 20),
 
                             _buildTextField(
@@ -302,23 +348,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                             ),
                             const SizedBox(height: 20),
                             
-                            _buildTextField(
-                              context: context,
-                              controller: _passwordController,
-                              label: 'Password',
-                              icon: Icons.lock_outline_rounded,
-                              isDark: isDark,
-                              obscureText: _obscurePassword,
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                                  size: 20,
-                                ),
-                                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                                color: isDark ? Colors.white60 : Colors.black54,
-                              ),
-                              validator: (v) => v!.length < 6 ? 'Password must be at least 6 characters' : null,
-                            ),
+                            _buildPasswordField(context, isDark),
                             const SizedBox(height: 20),
                             
                            _buildTextField(
@@ -542,6 +572,261 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           borderSide: const BorderSide(color: Colors.redAccent, width: 2),
         ),
       ),
+    );
+  }
+
+  Widget _buildPhoneField(BuildContext context, bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Country Code Dropdown with Flags
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              border: Border(
+                right: BorderSide(
+                  color: isDark ? Colors.white10 : Colors.black.withOpacity(0.1),
+                ),
+              ),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedPhoneCode,
+                icon: Icon(
+                  Icons.arrow_drop_down,
+                  color: isDark ? Colors.white54 : Colors.black38,
+                ),
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
+                dropdownColor: isDark ? Colors.grey[900] : Colors.white,
+                items: [
+                  DropdownMenuItem(
+                    value: '+880',
+                    child: Row(
+                      children: [
+                        Text('🇧🇩', style: TextStyle(fontSize: 20)),
+                        SizedBox(width: 8),
+                        Text('+880'),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: '+1',
+                    child: Row(
+                      children: [
+                        Text('🇺🇸', style: TextStyle(fontSize: 20)),
+                        SizedBox(width: 8),
+                        Text('+1'),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: '+44',
+                    child: Row(
+                      children: [
+                        Text('🇬🇧', style: TextStyle(fontSize: 20)),
+                        SizedBox(width: 8),
+                        Text('+44'),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: '+92',
+                    child: Row(
+                      children: [
+                        Text('🇵🇰', style: TextStyle(fontSize: 20)),
+                        SizedBox(width: 8),
+                        Text('+92'),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: '+86',
+                    child: Row(
+                      children: [
+                        Text('🇨🇳', style: TextStyle(fontSize: 20)),
+                        SizedBox(width: 8),
+                        Text('+86'),
+                      ],
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedPhoneCode = value!;
+                  });
+                },
+              ),
+            ),
+          ),
+          // Phone Number Field
+          Expanded(
+            child: TextFormField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
+                fontWeight: FontWeight.w500,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Phone Number',
+                labelStyle: TextStyle(
+                  color: isDark ? Colors.white60 : Colors.black45,
+                  fontSize: 14,
+                ),
+                hintText: '1234567890',
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.white30 : Colors.black26,
+                ),
+                prefixIcon: Icon(
+                  Icons.phone_android_rounded,
+                  color: isDark ? Colors.white54 : Colors.black38,
+                  size: 22,
+                ),
+                filled: false,
+                contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Phone number is required';
+                }
+                // Remove any spaces or dashes
+                final cleanedValue = value.replaceAll(RegExp(r'[\s-]'), '');
+                // Check if it's exactly 10 digits
+                if (cleanedValue.length != 10 || !RegExp(r'^[0-9]{10}$').hasMatch(cleanedValue)) {
+                  return 'Invalid Phone number';
+                }
+                return null;
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPasswordField(BuildContext context, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          controller: _passwordController,
+          obscureText: _obscurePassword,
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
+          decoration: InputDecoration(
+            labelText: 'Password',
+            labelStyle: TextStyle(
+              color: isDark ? Colors.white60 : Colors.black45,
+              fontSize: 14,
+            ),
+            prefixIcon: Icon(
+              Icons.lock_outline_rounded,
+              color: isDark ? Colors.white54 : Colors.black38,
+              size: 22,
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                size: 20,
+              ),
+              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              color: isDark ? Colors.white60 : Colors.black54,
+            ),
+            filled: true,
+            fillColor: isDark ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.05),
+            contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Colors.redAccent, width: 1),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Colors.redAccent, width: 2),
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Password is required';
+            }
+            if (value.length < 6) {
+              return 'Password must be at least 6 characters';
+            }
+            if (!value.contains(RegExp(r'[A-Z]'))) {
+              return 'Password must contain at least one uppercase letter';
+            }
+            if (!value.contains(RegExp(r'[a-z]'))) {
+              return 'Password must contain at least one lowercase letter';
+            }
+            if (!value.contains(RegExp(r'[0-9]'))) {
+              return 'Password must contain at least one number';
+            }
+            if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+              return 'Password must contain at least one symbol (@, #, \$, etc.)';
+            }
+            return null;
+          },
+        ),
+        if (_passwordController.text.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          // Password Strength Bar
+          Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: _passwordStrength,
+                    minHeight: 6,
+                    backgroundColor: isDark ? Colors.white10 : Colors.black12,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      _getPasswordStrengthColor(_passwordStrength),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                _passwordStrengthText,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: _getPasswordStrengthColor(_passwordStrength),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
     );
   }
 }
