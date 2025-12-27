@@ -10,97 +10,47 @@ class AuthService {
   /// Register a new user
   /// Returns: Map with 'success' (bool) and 'message' or 'token' (String)
   Future<Map<String, dynamic>> register({
-    required String name,
-    required String email,
-    required String password,
+    required String phone,
+    required String pin,
   }) async {
-    try {
-      final response = await http.post(
-        Uri.parse(ApiConfig.registerUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'name': name,
-          'email': email,
-          'password': password,
-        }),
-      );
-
-      if (response.statusCode == 201) {
-        // Registration successful
-        final data = jsonDecode(response.body);
-        
-        // Auto-login after registration by calling login
-        final loginResult = await login(email: email, password: password);
-        return loginResult;
-      } else if (response.statusCode == 409) {
-        // User already exists
-        final error = jsonDecode(response.body);
-        return {
-          'success': false,
-          'message': error['error'] ?? 'User with this email already exists',
-        };
-      } else {
-        // Other errors
-        final error = jsonDecode(response.body);
-        return {
-          'success': false,
-          'message': error['error'] ?? 'Registration failed',
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
-    }
+    // SIMULATION: Mock Registration
+    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
+    final token = 'mock_token_$phone';
+    await saveToken(token);
+    return {
+      'success': true,
+      'token': token,
+      'message': 'Simulation: Registration Successful!',
+    };
   }
 
   /// Login user
   /// Returns: Map with 'success' (bool) and 'message' or 'token' (String)
   Future<Map<String, dynamic>> login({
-    required String email,
-    required String password,
+    required String phone,
+    required String pin,
   }) async {
-    try {
-      final response = await http.post(
-        Uri.parse(ApiConfig.loginUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
-      );
+    // SIMULATION: Mock Login
+    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
+    final token = 'mock_token_$phone';
+    await saveToken(token);
+    return {
+      'success': true,
+      'token': token,
+      'message': 'Simulation: Login Successful!',
+    };
+  }
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final token = data['token'];
-        
-        // Save token
-        await saveToken(token);
-        
-        return {
-          'success': true,
-          'token': token,
-          'message': 'Login successful',
-        };
-      } else if (response.statusCode == 401) {
-        return {
-          'success': false,
-          'message': 'Invalid email or password',
-        };
-      } else {
-        final error = jsonDecode(response.body);
-        return {
-          'success': false,
-          'message': error['error'] ?? 'Login failed',
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
-    }
+  /// Send OTP to phone (Mocked)
+  Future<bool> sendOtp(String phone) async {
+    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
+    return true;
+  }
+
+  /// Verify OTP (Mocked)
+  Future<bool> verifyOtp(String phone, String otp) async {
+    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
+    return true; // Accept any OTP
   }
 
   /// Save JWT token to local storage
@@ -112,7 +62,7 @@ class AuthService {
   /// Get saved JWT token
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_tokenKey);
+    return prefs.getString(_tokenKey) ?? 'mock_token_12345'; // Return mock token if null for testing
   }
 
   /// Check if user is logged in
