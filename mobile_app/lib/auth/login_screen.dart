@@ -13,11 +13,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   final _formKey = GlobalKey<FormState>();
   
   // Controllers
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _pinController = TextEditingController();
 
   bool _isLoading = false;
-  bool _obscurePassword = true;
+  bool _obscurePin = true;
+  String _selectedPhoneCode = '+880';
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -42,8 +43,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   void dispose() {
     _animationController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
+    _phoneController.dispose();
+    _pinController.dispose();
     super.dispose();
   }
 
@@ -54,8 +55,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       // Call auth API
       final authService = AuthService();
       final result = await authService.login(
-        email: _emailController.text,
-        password: _passwordController.text,
+        phone: _phoneController.text,
+        pin: _pinController.text, // Assuming login uses PIN now
       );
       
       if (mounted) {
@@ -109,6 +110,56 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black45 : Colors.white54,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.shopping_cart_outlined, size: 20),
+              tooltip: 'Due Payments',
+              onPressed: () => Navigator.pushNamed(context, '/due-payment'),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black45 : Colors.white54,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.receipt_long_rounded, size: 20),
+              tooltip: 'Transactions',
+              onPressed: () => Navigator.pushNamed(context, '/'),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black45 : Colors.white54,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.credit_card_rounded, size: 20),
+              tooltip: 'Credit Status',
+              onPressed: () => Navigator.pushNamed(context, '/credit'),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black45 : Colors.white54,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.verified_user_outlined, size: 20),
+              tooltip: 'KYC Verification',
+              onPressed: () => Navigator.pushNamed(context, '/kyc'),
+            ),
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -161,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
-                                Icons.lock_person_rounded,
+                                Icons.lock_open_rounded,
                                 size: 48,
                                 color: primaryColor,
                               ),
@@ -177,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Access your account',
+                              'Enter your phone number and PIN',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 16,
@@ -186,34 +237,104 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             ),
                             const SizedBox(height: 40),
                             
-                            // Form Fields
-                            _buildTextField(
-                              context: context,
-                              controller: _emailController,
-                              label: 'Email Address',
-                              icon: Icons.email_outlined,
-                              isDark: isDark,
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (v) => !v!.contains('@') ? 'Invalid email address' : null,
+                            // Phone Field
+                             Container(
+                              decoration: BoxDecoration(
+                                color: isDark ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        right: BorderSide(
+                                          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.1),
+                                        ),
+                                      ),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        value: _selectedPhoneCode,
+                                        icon: Icon(
+                                          Icons.arrow_drop_down,
+                                          color: isDark ? Colors.white54 : Colors.black38,
+                                        ),
+                                        dropdownColor: isDark ? Colors.grey[900] : Colors.white,
+                                        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                                        items: ['+880', '+1', '+44', '+92', '+86']
+                                            .map((code) => DropdownMenuItem(value: code, child: Text(code)))
+                                            .toList(),
+                                        onChanged: (value) => setState(() => _selectedPhoneCode = value!),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _phoneController,
+                                      keyboardType: TextInputType.phone,
+                                      style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                                      decoration: InputDecoration(
+                                        hintText: 'Phone Number',
+                                        hintStyle: TextStyle(color: isDark ? Colors.white30 : Colors.black26),
+                                        border: InputBorder.none,
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                      ),
+                                      validator: (v) => v!.isEmpty ? 'Phone number is required' : null,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                             const SizedBox(height: 20),
                             
-                            _buildTextField(
-                              context: context,
-                              controller: _passwordController,
-                              label: 'Password',
-                              icon: Icons.lock_outline_rounded,
-                              isDark: isDark,
-                              obscureText: _obscurePassword,
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                                  size: 20,
+                            // PIN Field
+                            TextFormField(
+                              controller: _pinController,
+                              obscureText: _obscurePin,
+                              keyboardType: TextInputType.number,
+                              style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.w500),
+                              decoration: InputDecoration(
+                                labelText: 'PIN',
+                                labelStyle: TextStyle(color: isDark ? Colors.white60 : Colors.black45, fontSize: 14),
+                                prefixIcon: Icon(Icons.lock_outline_rounded, color: isDark ? Colors.white54 : Colors.black38, size: 22),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePin ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                    size: 20,
+                                  ),
+                                  onPressed: () => setState(() => _obscurePin = !_obscurePin),
+                                  color: isDark ? Colors.white60 : Colors.black54,
                                 ),
-                                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                                color: isDark ? Colors.white60 : Colors.black54,
+                                filled: true,
+                                fillColor: isDark ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.05),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(color: Colors.redAccent, width: 1),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(color: Colors.redAccent, width: 2),
+                                ),
                               ),
-                              validator: (v) => v!.isEmpty ? 'Password is required' : null,
+                              validator: (v) => v!.isEmpty ? 'PIN is required' : null,
                             ),
                             
                             const SizedBox(height: 32),
@@ -296,55 +417,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required BuildContext context,
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required bool isDark,
-    bool obscureText = false,
-    Widget? suffixIcon,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      validator: validator,
-      style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.w500),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: isDark ? Colors.white60 : Colors.black45, fontSize: 14),
-        prefixIcon: Icon(icon, color: isDark ? Colors.white54 : Colors.black38, size: 22),
-        suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: isDark ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.05),
-        contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 2),
         ),
       ),
     );
