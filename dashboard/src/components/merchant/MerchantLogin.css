@@ -1,0 +1,102 @@
+.merchant-login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f1f8e9;
+    /* Light green bg */
+}
+
+.merchant-login-card {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #e0e6ed;
+}
+
+.merchant-login-logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.merchant-login-logo h2 {
+    color: #1b5e20;
+    font-weight: 700;
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+.merchant-login-logo span {
+    color: #4caf50;
+}
+
+.merchant-login-logo p {
+    color: #7b8a9b;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #2e3a47;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e0e6ed;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #2e7d32;
+}
+
+.merchant-login-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+
+.merchant-login-btn:hover {
+    background-color: #1b5e20;
+}
+
+.merchant-forgot-password {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.merchant-forgot-password a {
+    color: #5a6c7d;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.merchant-forgot-password a:hover {
+    color: #2e7d32;
+    text-decoration: underline;
+}
