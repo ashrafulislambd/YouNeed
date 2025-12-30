@@ -6,6 +6,7 @@ import 'auth/login_screen.dart';
 import 'credit/credit_screen.dart';
 import 'screens/due_payment_dashboard.dart';
 import 'screens/kyc_screen.dart';
+import 'donation_dashboard/donation_dashboard_screen.dart';
 
 void main() {
   runApp(const YouNeedApp());
@@ -63,6 +64,7 @@ class YouNeedApp extends StatelessWidget {
             '/credit': (context) => const CreditScreen(),
             '/due-payment': (context) => const DuePaymentDashboard(),
             '/kyc': (context) => const KycScreen(),
+            '/donation': (context) => const DonationDashboardScreen(),
           },
           debugShowCheckedModeBanner: false,
         );

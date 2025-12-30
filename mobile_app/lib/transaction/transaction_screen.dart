@@ -49,6 +49,11 @@ class TransactionScreen extends StatelessWidget {
             onPressed: () => Navigator.pushNamed(context, '/kyc'),
           ),
           IconButton(
+            icon: const Icon(Icons.volunteer_activism, color: Colors.pinkAccent),
+            tooltip: 'Donation Dashboard',
+            onPressed: () => Navigator.pushNamed(context, '/donation'),
+          ),
+          IconButton(
             icon: const Icon(Icons.person_outline_rounded, color: Colors.deepPurple),
             tooltip: 'Profile / Register',
             onPressed: () => Navigator.pushNamed(context, '/register'),
