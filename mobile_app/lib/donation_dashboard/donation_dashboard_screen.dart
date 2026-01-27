@@ -79,64 +79,8 @@ class _DonationDashboardScreenState extends State<DonationDashboardScreen> {
           return DonationCard(
             donationCase: item,
             onDonate: () => _handleDonate(item),
-            onCardClick: () => _showCaseDetails(item),
           );
         },
-      ),
-    );
-  }
-
-  void _showCaseDetails(DonationCase item) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(item.name),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (item.isFromContacts)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  children: [
-                    Icon(Icons.people, size: 16, color: Theme.of(context).colorScheme.primary),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Relationship: ${item.relationship}',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-              ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Row(
-                children: [
-                  Icon(Icons.location_on, size: 16, color: Theme.of(context).colorScheme.secondary),
-                  const SizedBox(width: 8),
-                  Text('Location: ${item.location}'),
-                ],
-              ),
-            ),
-            const Divider(),
-            const SizedBox(height: 8),
-            Text(item.story),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _handleDonate(item);
-            },
-            child: const Text('Donate'),
-          ),
-        ],
       ),
     );
   }

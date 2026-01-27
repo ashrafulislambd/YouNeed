@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'donation_model.dart';
 import 'donation_payment_verification_screen.dart';
-import '../donation_credit/pages/donation_credit_page.dart';
 
 class DonationPaymentScreen extends StatefulWidget {
   final DonationCase donationCase;
@@ -47,22 +46,8 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
     );
 
     if (success == true && mounted) {
-       // Show Success/Credit Screen
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => _DonationSuccessScreen(
-            amount: amount,
-            donationCase: widget.donationCase,
-            paymentMethodTitle: _selectedMethod == 'bkash' ? 'bKash' : 'PayPal',
-          ),
-        ),
-      );
-
-      if (mounted) {
-         // Return the successfully processed amount to the dashboard
-        Navigator.pop(context, amount);
-      }
+       // Return the successfully processed amount to the dashboard
+      Navigator.pop(context, amount);
     }
   }
 
@@ -174,30 +159,10 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                       ),
               ),
             ),
-            
-            const SizedBox(height: 16),
-            
-            // Simulation Button
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: _simulateSuccess,
-                child: const Text('Simulate Credit Screen'),
-              ),
-            ),
           ],
         ),
       ),
     );
-  }
-
-  void _simulateSuccess() {
-     Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const DonationCreditPage(),
-        ),
-      );
   }
 }
 
@@ -251,112 +216,6 @@ class _PaymentMethodCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _DonationSuccessScreen extends StatelessWidget {
-  final double amount;
-  final DonationCase donationCase;
-  final String paymentMethodTitle;
-
-  const _DonationSuccessScreen({
-    Key? key,
-    required this.amount,
-    required this.donationCase,
-    required this.paymentMethodTitle,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.teal, // Success color background
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.check_circle_outline,
-                size: 100,
-                color: Colors.white,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Donation Successful!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Thank you for your generosity.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white.withOpacity(0.9),
-                ),
-              ),
-              const SizedBox(height: 48),
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Amount Donated',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                    Text(
-                      '৳${amount.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const Divider(height: 32),
-                    _buildDetailRow('To', donationCase.name),
-                    const SizedBox(height: 8),
-                    _buildDetailRow('Method', paymentMethodTitle),
-                    const SizedBox(height: 8),
-                    _buildDetailRow('Status', 'Credited'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 48),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.teal,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Text('Done', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w500)),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-      ],
     );
   }
 }
