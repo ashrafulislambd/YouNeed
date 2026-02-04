@@ -17,7 +17,9 @@ class _DonationAppState extends State<DonationApp> {
 
   void _toggleTheme() {
     setState(() {
-      _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+      _themeMode = _themeMode == ThemeMode.light
+          ? ThemeMode.dark
+          : ThemeMode.light;
     });
   }
 
@@ -29,19 +31,27 @@ class _DonationAppState extends State<DonationApp> {
       themeMode: _themeMode,
       theme: ThemeData(
         brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.light),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
         useMaterial3: true,
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
       home: Scaffold(
         body: const DonationDashboardScreen(),
         floatingActionButton: FloatingActionButton(
           onPressed: _toggleTheme,
-          child: Icon(_themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
+          child: Icon(
+            _themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode,
+          ),
         ),
       ),
     );

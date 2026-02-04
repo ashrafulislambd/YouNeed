@@ -1,3 +1,5 @@
+import 'package:dashboard/storefront/external/dummy_order_repository.dart';
+import 'package:dashboard/storefront/external/dummy_product_repository.dart';
 import 'package:flutter/material.dart';
 import 'theme_provider.dart';
 import 'transaction/transaction_screen.dart';
@@ -7,6 +9,7 @@ import 'credit/credit_screen.dart';
 import 'screens/due_payment_dashboard.dart';
 import 'screens/kyc_screen.dart';
 import 'donation_dashboard/donation_dashboard_screen.dart';
+import 'storefront/main_page.dart';
 
 void main() {
   runApp(const YouNeedApp());
@@ -34,7 +37,11 @@ class YouNeedApp extends StatelessWidget {
             appBarTheme: const AppBarTheme(
               backgroundColor: Colors.white,
               iconTheme: IconThemeData(color: Colors.black),
-              titleTextStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
+              titleTextStyle: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
             ),
             useMaterial3: true,
             fontFamily: 'Roboto',
@@ -50,13 +57,17 @@ class YouNeedApp extends StatelessWidget {
             appBarTheme: const AppBarTheme(
               backgroundColor: Color(0xFF121212),
               iconTheme: IconThemeData(color: Colors.white),
-              titleTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+              titleTextStyle: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
             ),
             useMaterial3: true,
             fontFamily: 'Roboto',
           ),
           // Define Routes
-          initialRoute: '/register',
+          initialRoute: '/storefront',
           routes: {
             '/': (context) => const TransactionScreen(),
             '/register': (context) => const RegisterScreen(),
@@ -65,6 +76,10 @@ class YouNeedApp extends StatelessWidget {
             '/due-payment': (context) => const DuePaymentDashboard(),
             '/kyc': (context) => const KycScreen(),
             '/donation': (context) => const DonationDashboardScreen(),
+            '/storefront': (context) => ShopMainPage(
+              productRepository: DummyProductRepository(),
+              orderRepository: DummyOrderRepository(),
+            ),
           },
           debugShowCheckedModeBanner: false,
         );
