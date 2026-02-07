@@ -10,6 +10,9 @@ import 'screens/due_payment_dashboard.dart';
 import 'screens/kyc_screen.dart';
 import 'donation_dashboard/donation_dashboard_screen.dart';
 import 'storefront/main_page.dart';
+import 'storefront/product_list_screen.dart';
+import 'storefront/external/mock_product_item_repository.dart';
+import 'bnpl/bnpl_plans_screen.dart';
 
 void main() {
   runApp(const YouNeedApp());
@@ -67,7 +70,7 @@ class YouNeedApp extends StatelessWidget {
             fontFamily: 'Roboto',
           ),
           // Define Routes
-          initialRoute: '/storefront',
+          initialRoute: '/login',
           routes: {
             '/': (context) => const TransactionScreen(),
             '/register': (context) => const RegisterScreen(),
@@ -79,6 +82,9 @@ class YouNeedApp extends StatelessWidget {
             '/storefront': (context) => ShopMainPage(
               productRepository: DummyProductRepository(),
               orderRepository: DummyOrderRepository(),
+            ),
+            '/products': (context) => ProductListScreen(
+              productRepository: MockProductItemRepository(),
             ),
           },
           debugShowCheckedModeBanner: false,

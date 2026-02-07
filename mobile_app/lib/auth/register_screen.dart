@@ -127,7 +127,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Registration Successful!'), backgroundColor: Colors.green),
           );
-          Navigator.pushReplacementNamed(context, '/due-payment');
+          Navigator.pushReplacementNamed(context, '/products');
         } else {
           _showError(result['message'] ?? 'Registration failed');
         }
@@ -178,6 +178,44 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
               icon: const Icon(Icons.arrow_back_ios_new_rounded),
               onPressed: () => Navigator.of(context).pop(),
             ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black45 : Colors.white54,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.storefront, size: 18, color: Colors.green),
+              tooltip: 'Products',
+              onPressed: () => Navigator.pushNamed(context, '/products'),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black45 : Colors.white54,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.receipt_long, size: 18, color: Colors.orange),
+              tooltip: 'Transactions',
+              onPressed: () => Navigator.pushNamed(context, '/'),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black45 : Colors.white54,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.credit_card, size: 18, color: Colors.blueAccent),
+              tooltip: 'Credit',
+              onPressed: () => Navigator.pushNamed(context, '/credit'),
+            ),
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(

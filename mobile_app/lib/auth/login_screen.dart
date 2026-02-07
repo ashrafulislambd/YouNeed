@@ -72,8 +72,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           );
-          // Navigate to due payment dashboard
-          Navigator.pushReplacementNamed(context, '/due-payment');
+          // Navigate to products after login
+          Navigator.pushReplacementNamed(context, '/products');
         } else {
           // Show error
           ScaffoldMessenger.of(context).showSnackBar(
@@ -111,6 +111,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black45 : Colors.white54,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.storefront, size: 20, color: Colors.green),
+              tooltip: 'Products',
+              onPressed: () => Navigator.pushNamed(context, '/products'),
+            ),
+          ),
           Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
