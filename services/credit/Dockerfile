@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
@@ -7,6 +7,7 @@ RUN go mod download
 
 COPY . .
 
+RUN go mod tidy
 RUN go build -o credit-service ./cmd/api
 
 FROM alpine:latest
