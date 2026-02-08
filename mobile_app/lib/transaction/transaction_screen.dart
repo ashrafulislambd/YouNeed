@@ -34,6 +34,11 @@ class TransactionScreen extends StatelessWidget {
         elevation: 0,
         actions: [
           IconButton(
+            icon: const Icon(Icons.storefront, color: Colors.teal),
+            tooltip: 'Products',
+            onPressed: () => Navigator.pushNamed(context, '/products'),
+          ),
+          IconButton(
             icon: const Icon(Icons.shopping_cart_outlined, color: Colors.green),
             tooltip: 'Due Payments',
             onPressed: () => Navigator.pushNamed(context, '/due-payment'),

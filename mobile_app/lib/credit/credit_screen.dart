@@ -70,6 +70,30 @@ class _CreditScreenState extends State<CreditScreen> with SingleTickerProviderSt
                 borderRadius: BorderRadius.circular(12),
               ),
             child: IconButton(
+              icon: Icon(Icons.storefront, color: Colors.teal, size: 20),
+              tooltip: 'Products',
+              onPressed: () => Navigator.pushNamed(context, '/products'),
+            ),
+          ),
+          Container(
+             margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.black45 : Colors.white54,
+                borderRadius: BorderRadius.circular(12),
+              ),
+            child: IconButton(
+              icon: Icon(Icons.receipt_long, color: Colors.orange, size: 20),
+              tooltip: 'Transactions',
+              onPressed: () => Navigator.pushNamed(context, '/'),
+            ),
+          ),
+          Container(
+             margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.black45 : Colors.white54,
+                borderRadius: BorderRadius.circular(12),
+              ),
+            child: IconButton(
               icon: Icon(Icons.shopping_cart_outlined, color: isDark ? Colors.white : Colors.black, size: 20),
               tooltip: 'Due Payments',
               onPressed: () => Navigator.pushNamed(context, '/due-payment'),

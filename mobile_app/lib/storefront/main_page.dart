@@ -4,6 +4,7 @@ import 'package:dashboard/storefront/application/interfaces/order_repository.dar
 import 'package:dashboard/storefront/application/interfaces/product_repository.dart';
 import 'package:dashboard/storefront/entities/product.dart';
 import 'package:dashboard/storefront/entities/user_context.dart';
+import 'package:dashboard/bnpl/bnpl_plans_screen.dart';
 import 'package:flutter/material.dart';
 
 class ShopMainPage extends StatefulWidget {
@@ -184,17 +185,44 @@ class _ShopMainPageState extends State<ShopMainPage> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _cartItems.isEmpty || _isOrdering
-                          ? null
-                          : () {
-                              Navigator.pop(context); // Close cart
-                              _processOrder();
-                            },
-                      child: const Text("Checkout"),
-                    ),
+                  Row(
+                    children: [
+                      // Original Checkout Button
+                      Expanded(
+                        child: SizedBox(
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _cartItems.isEmpty || _isOrdering
+                                ? null
+                                : () {
+                                    Navigator.pop(context); // Close cart
+                                    _processOrder();
+                                  },
+                            child: const Text("Pay Now"),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // BNPL Button
+                      Expanded(
+                        child: SizedBox(
+                          height: 50,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: _cartItems.isEmpty || _isOrdering
+                                ? null
+                                : () {
+                                    Navigator.pop(context); // Close cart
+                                    _navigateToBnplPlans();
+                                  },
+                            child: const Text("Pay Later"),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -202,6 +230,24 @@ class _ShopMainPageState extends State<ShopMainPage> {
           },
         );
       },
+    );
+  }
+
+  void _navigateToBnplPlans() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BnplPlansScreen(
+          cartTotal: _cartTotalPrice,
+          cartItems: Map.from(_cartItems),
+          onPlanSelected: () {
+            // Clear cart after BNPL plan is selected
+            setState(() {
+              _cartItems.clear();
+            });
+          },
+        ),
+      ),
     );
   }
 

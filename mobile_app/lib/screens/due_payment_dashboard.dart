@@ -132,6 +132,18 @@ class _DuePaymentDashboardState extends State<DuePaymentDashboard> with SingleTi
               shape: BoxShape.circle,
             ),
             child: IconButton(
+              icon: Icon(Icons.storefront, color: Colors.teal),
+              tooltip: 'Products',
+              onPressed: () => Navigator.pushNamed(context, '/products'),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withOpacity(0.1) : Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
               icon: Icon(Icons.person_outline_rounded, color: isDark ? Colors.white : Colors.black87),
               tooltip: 'Profile / Register',
               onPressed: () => Navigator.pushNamed(context, '/register'),

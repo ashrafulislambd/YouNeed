@@ -200,6 +200,18 @@ class _KycScreenState extends State<KycScreen> {
               shape: BoxShape.circle,
             ),
             child: IconButton(
+              icon: Icon(Icons.storefront, color: Colors.teal, size: 20),
+              tooltip: 'Products',
+              onPressed: () => Navigator.pushNamed(context, '/products'),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: cardColor,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
               icon: Icon(Icons.shopping_cart_outlined, color: textColor, size: 20),
               tooltip: 'Due Payments',
               onPressed: () => Navigator.pushNamed(context, '/due-payment'),
