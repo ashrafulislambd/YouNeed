@@ -10,6 +10,10 @@ import MerchantDashboard from './components/merchant/MerchantDashboard';
 import MerchantOrders from './components/merchant/MerchantOrders';
 import MerchantProducts from './components/merchant/MerchantProducts';
 import MerchantPrivateRoute from './components/merchant/MerchantPrivateRoute';
+import MerchantAnalytics from './components/merchant/MerchantAnalytics';
+import MerchantSettlement from './components/merchant/MerchantSettlement';
+import MerchantPayments from './components/merchant/MerchantPayments';
+import MerchantBankDetails from './components/merchant/MerchantBankDetails';
 import './App.css';
 
 function App() {
@@ -29,6 +33,10 @@ function App() {
               <Route path="dashboard" element={<MerchantDashboard />} />
               <Route path="orders" element={<MerchantOrders />} />
               <Route path="products" element={<MerchantProducts />} />
+              <Route path="analytics" element={<MerchantAnalytics />} />
+              <Route path="settlement" element={<MerchantSettlement />} />
+              <Route path="payments" element={<MerchantPayments />} />
+              <Route path="bank-details" element={<MerchantBankDetails />} />
             </Route>
           </Route>
 
