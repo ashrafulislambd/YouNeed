@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/otp_service.dart';
 
 class DonationPaymentVerificationScreen extends StatefulWidget {
   final double amount;
@@ -22,6 +23,7 @@ class _DonationPaymentVerificationScreenState extends State<DonationPaymentVerif
   final _otpController = TextEditingController();
   final _pinController = TextEditingController();
   bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -31,25 +33,111 @@ class _DonationPaymentVerificationScreenState extends State<DonationPaymentVerif
     super.dispose();
   }
 
-  void _nextStep() async {
+  void _sendOtp() async {
+    final phone = _phoneController.text.trim();
+    if (phone.isEmpty) {
+      setState(() => _errorMessage = 'Please enter your phone number');
+      return;
+    }
+
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
     });
 
-    // Simulate network validation
+    final result = await OtpService.sendOtp(phone);
+
+    if (!mounted) return;
+
+    if (result['success'] == true) {
+      setState(() {
+        _isLoading = false;
+        _currentStep = 1;
+        _errorMessage = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'OTP sent!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = result['message'] ?? 'Failed to send OTP';
+      });
+    }
+  }
+
+  void _verifyOtp() async {
+    final phone = _phoneController.text.trim();
+    final code = _otpController.text.trim();
+
+    if (code.isEmpty) {
+      setState(() => _errorMessage = 'Please enter the OTP code');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final result = await OtpService.verifyOtp(phone, code);
+
+    if (!mounted) return;
+
+    if (result['verified'] == true) {
+      setState(() {
+        _isLoading = false;
+        _currentStep = 2;
+        _errorMessage = null;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = result['message'] ?? 'Invalid OTP';
+      });
+    }
+  }
+
+  void _confirmPayment() async {
+    final pin = _pinController.text.trim();
+    if (pin.isEmpty) {
+      setState(() => _errorMessage = 'Please enter your PIN');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    // Simulate PIN validation (this remains local)
     await Future.delayed(const Duration(seconds: 1));
 
     if (!mounted) return;
 
-    if (_currentStep < 2) {
-       setState(() {
-        _isLoading = false;
-        _currentStep++;
-      });
-    } else {
-      // Final confirmation
-      Navigator.pop(context, true); // Return true to indicate success
+    Navigator.pop(context, true); // Return true to indicate success
+  }
+
+  void _nextStep() {
+    switch (_currentStep) {
+      case 0:
+        _sendOtp();
+        break;
+      case 1:
+        _verifyOtp();
+        break;
+      case 2:
+        _confirmPayment();
+        break;
     }
+  }
+
+  void _resendOtp() {
+    _otpController.clear();
+    _sendOtp();
   }
 
   Widget _buildPhoneStep() {
@@ -59,6 +147,11 @@ class _DonationPaymentVerificationScreenState extends State<DonationPaymentVerif
         const Text(
           'Enter your mobile number',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'We will send a verification code to this number',
+          style: TextStyle(fontSize: 13, color: Colors.grey[600]),
         ),
         const SizedBox(height: 16),
         TextField(
@@ -80,8 +173,13 @@ class _DonationPaymentVerificationScreenState extends State<DonationPaymentVerif
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Enter OTP sent to ${_phoneController.text}',
+          'Enter verification code',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Code sent to ${_phoneController.text}',
+          style: TextStyle(fontSize: 13, color: Colors.grey[600]),
         ),
         const SizedBox(height: 16),
         TextField(
@@ -96,6 +194,14 @@ class _DonationPaymentVerificationScreenState extends State<DonationPaymentVerif
             counterText: "",
           ),
           autofocus: true,
+        ),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: _isLoading ? null : _resendOtp,
+            child: const Text('Resend Code'),
+          ),
         ),
       ],
     );
@@ -206,6 +312,32 @@ class _DonationPaymentVerificationScreenState extends State<DonationPaymentVerif
             ),
             const SizedBox(height: 40),
             
+            // Error Message
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.red, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
             // Step Content
             Expanded(child: content),
             
