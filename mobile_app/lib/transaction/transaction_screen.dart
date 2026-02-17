@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:dashboard/notifications/notification_service.dart';
 import 'mock_data.dart';
 import '../theme_provider.dart'; // Import from parent folder
 import 'transaction_model.dart';
@@ -33,6 +34,43 @@ class TransactionScreen extends StatelessWidget {
         centerTitle: false,
         elevation: 0,
         actions: [
+          // Notification bell icon with badge
+          ValueListenableBuilder<int>(
+            valueListenable: NotificationService().unreadCountNotifier,
+            builder: (context, unreadCount, _) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined, color: Colors.amber),
+                    tooltip: 'Notifications',
+                    onPressed: () => Navigator.pushNamed(context, '/notifications'),
+                  ),
+                  if (unreadCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '$unreadCount',
+                          style: const TextStyle(color: Colors.white, fontSize: 10),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.storefront, color: Colors.teal),
             tooltip: 'Products',

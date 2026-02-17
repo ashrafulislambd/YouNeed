@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dashboard/bnpl/bnpl_plans_screen.dart';
 import 'package:dashboard/storefront/application/interfaces/product_item_repository.dart';
 import 'package:dashboard/storefront/entities/product_item.dart';
+import 'package:dashboard/notifications/notification_service.dart';
 import '../theme_provider.dart';
 
 /// Categorized Product List Screen with navigation and BNPL checkout
@@ -70,6 +71,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         builder: (context) => BnplPlansScreen(
           cartTotal: product.price,
           cartItems: {product.id: 1},
+          productNames: [product.name],
           onPlanSelected: () {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -137,6 +139,43 @@ class _ProductListScreenState extends State<ProductListScreen> {
         centerTitle: false,
         elevation: 0,
         actions: [
+          // Notification bell icon with badge
+          ValueListenableBuilder<int>(
+            valueListenable: NotificationService().unreadCountNotifier,
+            builder: (context, unreadCount, _) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined, color: Colors.amber),
+                    tooltip: 'Notifications',
+                    onPressed: () => Navigator.pushNamed(context, '/notifications'),
+                  ),
+                  if (unreadCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '$unreadCount',
+                          style: const TextStyle(color: Colors.white, fontSize: 10),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.receipt_long, color: Colors.orange),
             tooltip: 'Transactions',

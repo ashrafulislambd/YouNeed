@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'dart:math';
+import 'package:dashboard/notifications/notification_service.dart';
+import 'package:dashboard/notifications/notification_model.dart';
+import 'package:dashboard/services/order_service.dart';
+import 'package:dashboard/models/payment.dart';
 import 'application/interfaces/bnpl_repository.dart';
 import 'entities/bnpl_plan.dart';
 import 'external/mock_bnpl_repository.dart';
@@ -9,6 +14,7 @@ import 'external/mock_bnpl_repository.dart';
 class BnplPlansScreen extends StatefulWidget {
   final int cartTotal;
   final Map<int, int> cartItems;
+  final List<String>? productNames;
   final VoidCallback? onPlanSelected;
   final IBnplRepository? bnplRepository;
 
@@ -16,6 +22,7 @@ class BnplPlansScreen extends StatefulWidget {
     super.key,
     required this.cartTotal,
     required this.cartItems,
+    this.productNames,
     this.onPlanSelected,
     this.bnplRepository,
   });
@@ -711,6 +718,37 @@ class _BnplPlansScreenState extends State<BnplPlansScreen>
               );
               
               if (success && mounted) {
+                // Generate dynamic order ID
+                final orderId = 1000 + Random().nextInt(9000);
+                final paymentDeadline = DateTime.now().add(Duration(days: plan.duration));
+                final deadlineStr = '${paymentDeadline.day}/${paymentDeadline.month}/${paymentDeadline.year}';
+
+                // Notification 1: Order placed
+                NotificationService().addNotification(
+                  title: 'Order #$orderId Placed Successfully',
+                  message: 'Your order has been confirmed! Estimated delivery within ${plan.duration} days. Pay ৳$totalPayable by $deadlineStr.',
+                  type: NotificationType.orderPlaced,
+                );
+
+                // Notification 2: Payment deadline reminder (fires after 15s to simulate)
+                NotificationService().scheduleNotification(
+                  title: 'Payment Reminder - Order #$orderId',
+                  message: 'Reminder: ৳$totalPayable is due for Order #$orderId by $deadlineStr. Please complete your payment to avoid cancellation.',
+                  delay: const Duration(seconds: 15),
+                  type: NotificationType.paymentReminder,
+                );
+
+                // Add order to Due Payment Dashboard
+                OrderService().addOrder(Payment(
+                  id: orderId.toString(),
+                  title: 'Order #$orderId',
+                  description: '${plan.name} — Pay ৳$totalPayable by $deadlineStr',
+                  amount: totalPayable.toDouble(),
+                  date: paymentDeadline,
+                  status: 'due',
+                  productNames: widget.productNames,
+                ));
+
                 Navigator.pop(context); // Close dialog
                 Navigator.pop(context, plan); // Return to cart with selected plan
                 ScaffoldMessenger.of(context).showSnackBar(

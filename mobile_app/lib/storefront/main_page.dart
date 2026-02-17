@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:dashboard/storefront/application/dto/order_dto.dart';
 import 'package:dashboard/storefront/application/interfaces/order_repository.dart';
 import 'package:dashboard/storefront/application/interfaces/product_repository.dart';
 import 'package:dashboard/storefront/entities/product.dart';
 import 'package:dashboard/storefront/entities/user_context.dart';
 import 'package:dashboard/bnpl/bnpl_plans_screen.dart';
+import 'package:dashboard/notifications/notification_service.dart';
+import 'package:dashboard/notifications/notification_model.dart';
 import 'package:flutter/material.dart';
 
 class ShopMainPage extends StatefulWidget {
@@ -269,9 +272,31 @@ class _ShopMainPageState extends State<ShopMainPage> {
         });
 
         if (response.successful == true) {
+          // Capture total before clearing cart
+          final orderTotal = _cartTotalPrice;
           setState(() {
             _cartItems.clear();
           });
+          // Dynamic order data
+          final deliveryDays = 3 + Random().nextInt(5);
+          final paymentDeadline = DateTime.now().add(Duration(days: deliveryDays));
+          final deadlineStr = '${paymentDeadline.day}/${paymentDeadline.month}/${paymentDeadline.year}';
+
+          // Notification 1: Order placed
+          NotificationService().addNotification(
+            title: 'Order #${response.orderId} Placed Successfully',
+            message: 'Your order has been confirmed! Estimated delivery within $deliveryDays days. Pay ৳$orderTotal by $deadlineStr.',
+            type: NotificationType.orderPlaced,
+          );
+
+          // Notification 2: Payment deadline reminder (fires after 15s to simulate)
+          NotificationService().scheduleNotification(
+            title: 'Payment Reminder - Order #${response.orderId}',
+            message: 'Reminder: ৳$orderTotal is due for Order #${response.orderId} by $deadlineStr. Please complete your payment to avoid cancellation.',
+            delay: const Duration(seconds: 15),
+            type: NotificationType.paymentReminder,
+          );
+
           _showOrderDialog(
             "Success",
             "Order placed successfully! ID: ${response.orderId}",
@@ -320,6 +345,43 @@ class _ShopMainPageState extends State<ShopMainPage> {
       appBar: AppBar(
         title: const Text("Shop"),
         actions: [
+          // Notification bell icon with badge
+          ValueListenableBuilder<int>(
+            valueListenable: NotificationService().unreadCountNotifier,
+            builder: (context, unreadCount, _) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined, color: Colors.amber),
+                    tooltip: 'Notifications',
+                    onPressed: () => Navigator.pushNamed(context, '/notifications'),
+                  ),
+                  if (unreadCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '$unreadCount',
+                          style: const TextStyle(color: Colors.white, fontSize: 10),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
           Stack(
             alignment: Alignment.center,
             children: [

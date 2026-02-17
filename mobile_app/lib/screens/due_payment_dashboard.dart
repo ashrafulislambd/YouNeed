@@ -3,6 +3,9 @@ import '../models/payment.dart';
 import '../widgets/payment_card.dart';
 import '../widgets/stat_card.dart';
 import '../theme_provider.dart';
+import '../services/order_service.dart';
+import '../notifications/notification_service.dart';
+import '../notifications/notification_model.dart';
 
 
 class DuePaymentDashboard extends StatefulWidget {
@@ -15,7 +18,7 @@ class DuePaymentDashboard extends StatefulWidget {
 class _DuePaymentDashboardState extends State<DuePaymentDashboard> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  final List<Payment> _allPayments = [
+  final List<Payment> _staticPayments = [
     Payment(
       id: '1',
       title: 'Rice (Minket)',
@@ -58,14 +61,23 @@ class _DuePaymentDashboardState extends State<DuePaymentDashboard> with SingleTi
     ),
   ];
 
+  List<Payment> get _allPayments => [..._staticPayments, ...OrderService().orders];
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    // Listen for new orders to refresh UI
+    OrderService().orderCountNotifier.addListener(_onOrdersChanged);
+  }
+
+  void _onOrdersChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    OrderService().orderCountNotifier.removeListener(_onOrdersChanged);
     _tabController.dispose();
     super.dispose();
   }
@@ -305,8 +317,20 @@ class _DuePaymentDashboardState extends State<DuePaymentDashboard> with SingleTi
           payment: payment,
           onPay: payment.status == 'due'
               ? () {
+                  // Mark as paid in OrderService if it's a dynamic order
+                  OrderService().markAsPaid(payment.id);
+                  // Send notification
+                  NotificationService().addNotification(
+                    title: 'Payment Completed',
+                    message: 'Payment of ৳${payment.amount.toStringAsFixed(0)} for ${payment.title} has been completed.',
+                    type: NotificationType.general,
+                  );
+                  setState(() {});
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Buying ${payment.title}...')),
+                    SnackBar(
+                      content: Text('৳${payment.amount.toStringAsFixed(0)} paid for ${payment.title}'),
+                      backgroundColor: Colors.green,
+                    ),
                   );
                 }
               : null,
