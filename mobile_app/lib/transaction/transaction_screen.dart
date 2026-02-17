@@ -109,6 +109,15 @@ class TransactionScreen extends StatelessWidget {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.pushNamed(context, '/donation');
+        },
+        label: const Text('Community Help'),
+        icon: const Icon(Icons.volunteer_activism),
+        backgroundColor: Colors.pinkAccent,
+        foregroundColor: Colors.white,
+      ),
       body: Column(
         children: [
           Expanded(
