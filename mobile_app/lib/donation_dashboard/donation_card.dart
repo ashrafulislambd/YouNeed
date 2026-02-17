@@ -98,6 +98,47 @@ class DonationCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 16),
+              if (donationCase.requestedFrom.isNotEmpty)
+                 Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.person_pin, size: 16, color: colorScheme.onSecondaryContainer),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Requesting from:',
+                              style: TextStyle(
+                                color: colorScheme.onSecondaryContainer,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Wrap(
+                          spacing: 4,
+                          children: donationCase.requestedFrom.map((name) => Chip(
+                            label: Text(name, style: TextStyle(fontSize: 11)),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            backgroundColor: colorScheme.surface,
+                          )).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

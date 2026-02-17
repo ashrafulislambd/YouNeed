@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'donation_model.dart';
 import 'donation_card.dart';
 import 'donation_payment_screen.dart';
+import 'create_donation_screen.dart';
 
 class DonationDashboardScreen extends StatefulWidget {
   const DonationDashboardScreen({Key? key}) : super(key: key);
@@ -11,14 +12,7 @@ class DonationDashboardScreen extends StatefulWidget {
 }
 
 class _DonationDashboardScreenState extends State<DonationDashboardScreen> {
-  // Using a local list to simulate state updates when donating
-  late List<DonationCase> _cases;
-
-  @override
-  void initState() {
-    super.initState();
-    _cases = List.from(kMockDonationCases);
-  }
+  final _donationService = DonationService();
 
   void _handleDonate(DonationCase item) async {
     // Navigate to payment screen and wait for result (donated amount)
@@ -37,21 +31,22 @@ class _DonationDashboardScreenState extends State<DonationDashboardScreen> {
   void _processDonation(DonationCase item, double amount) {
     if (amount <= 0) return;
 
-    setState(() {
-      final index = _cases.indexWhere((c) => c.id == item.id);
-      if (index != -1) {
-        // Create a new updated object
-        final current = _cases[index];
-        _cases[index] = DonationCase(
-            id: current.id,
-            name: current.name,
-            story: current.story,
-            targetAmount: current.targetAmount,
-            currentAmount: current.currentAmount + amount,
-            imageUrl: current.imageUrl
-        );
-      }
-    });
+    // Update the case in the service
+    final updatedCase = DonationCase(
+        id: item.id,
+        name: item.name,
+        story: item.story,
+        targetAmount: item.targetAmount,
+        currentAmount: item.currentAmount + amount,
+        imageUrl: item.imageUrl,
+        relationship: item.relationship,
+        location: item.location,
+        isFromContacts: item.isFromContacts,
+        hasHelpPost: item.hasHelpPost,
+        requestedFrom: item.requestedFrom,
+    );
+    
+    _donationService.updateCase(updatedCase);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -67,19 +62,73 @@ class _DonationDashboardScreenState extends State<DonationDashboardScreen> {
       appBar: AppBar(
         title: const Text('Community Support'),
         centerTitle: true,
-        // Remove hardcoded colors to allow Theme to handle it
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline_rounded),
+            tooltip: 'Request Donation',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CreateDonationScreen()),
+              );
+            },
+          ),
+        ],
       ),
-      // Remove hardcoded container color, let Scaffold background color take over (which varies by theme)
-      body: ListView.builder(
-        padding: const EdgeInsets.all(12),
-        itemCount: _cases.length,
-        itemBuilder: (context, index) {
-          final item = _cases[index];
-          return DonationCard(
-            donationCase: item,
-            onDonate: () => _handleDonate(item),
-            onCardClick: () => _showCaseDetails(item),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateDonationScreen()),
+          );
+        },
+        label: const Text('Request Money'),
+        icon: const Icon(Icons.add),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: ListenableBuilder(
+        listenable: _donationService,
+        builder: (context, child) {
+          final cases = _donationService.cases;
+          if (cases.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.volunteer_activism, size: 64, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No donation requests yet.',
+                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CreateDonationScreen()),
+                      );
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Create Request'),
+                  ),
+                ],
+              ),
+            );
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.only(left: 12, right: 12, top: 12, bottom: 80), // Add bottom padding for FAB
+            itemCount: cases.length,
+            itemBuilder: (context, index) {
+              final item = cases[index];
+              return DonationCard(
+                donationCase: item,
+                onDonate: () => _handleDonate(item),
+                onCardClick: () => _showCaseDetails(item),
+              );
+            },
           );
         },
       ),
@@ -113,9 +162,9 @@ class _DonationDashboardScreenState extends State<DonationDashboardScreen> {
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Row(
                 children: [
-                  Icon(Icons.location_on, size: 16, color: Theme.of(context).colorScheme.secondary),
-                  const SizedBox(width: 8),
-                  Text('Location: ${item.location}'),
+                   Icon(Icons.location_on, size: 16, color: Theme.of(context).colorScheme.secondary),
+                   const SizedBox(width: 8),
+                   Text('Location: ${item.location}'),
                 ],
               ),
             ),
