@@ -12,6 +12,7 @@ import 'donation_dashboard/donation_dashboard_screen.dart';
 import 'storefront/main_page.dart';
 import 'storefront/product_list_screen.dart';
 import 'storefront/external/mock_product_item_repository.dart';
+import 'notifications/notifications_screen.dart';
 import 'bnpl/bnpl_plans_screen.dart';
 
 void main() {
@@ -86,6 +87,7 @@ class YouNeedApp extends StatelessWidget {
             '/products': (context) => ProductListScreen(
               productRepository: MockProductItemRepository(),
             ),
+            '/notifications': (context) => const NotificationsScreen(),
           },
           debugShowCheckedModeBanner: false,
         );

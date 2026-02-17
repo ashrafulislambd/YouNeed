@@ -5,6 +5,7 @@ class Payment {
   final double amount;
   final DateTime date;
   final String status; // 'due', 'paid', 'pending'
+  final List<String>? productNames;
 
   Payment({
     required this.id,
@@ -13,5 +14,6 @@ class Payment {
     required this.amount,
     required this.date,
     required this.status,
+    this.productNames,
   });
 }

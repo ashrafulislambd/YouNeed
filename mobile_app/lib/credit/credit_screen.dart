@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:dashboard/notifications/notification_service.dart';
 import '../theme_provider.dart';
 
 class CreditScreen extends StatefulWidget {
@@ -133,6 +134,50 @@ class _CreditScreenState extends State<CreditScreen> with SingleTickerProviderSt
               icon: Icon(Icons.person_outline_rounded, color: isDark ? Colors.white : Colors.black, size: 20),
               tooltip: 'Profile / Register',
               onPressed: () => Navigator.pushNamed(context, '/register'),
+            ),
+          ),
+          // Notification bell icon with badge
+          Container(
+             margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.black45 : Colors.white54,
+                borderRadius: BorderRadius.circular(12),
+              ),
+            child: ValueListenableBuilder<int>(
+              valueListenable: NotificationService().unreadCountNotifier,
+              builder: (context, unreadCount, _) {
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.notifications_outlined, color: Colors.amber, size: 20),
+                      tooltip: 'Notifications',
+                      onPressed: () => Navigator.pushNamed(context, '/notifications'),
+                    ),
+                    if (unreadCount > 0)
+                      Positioned(
+                        right: 6,
+                        top: 6,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 14,
+                            minHeight: 14,
+                          ),
+                          child: Text(
+                            '$unreadCount',
+                            style: const TextStyle(color: Colors.white, fontSize: 9),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
           Container(
