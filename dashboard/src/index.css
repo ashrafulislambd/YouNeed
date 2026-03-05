@@ -1,0 +1,49 @@
+:root {
+  --bg: #eff6ff;
+  /* Slightly blue background (blue-50) */
+  --card: #ffffff;
+  --text: #020617;
+  --muted: #64748b;
+  --footer: #111827;
+  --primary: #1e40af;
+  /* Dark Blue */
+  --primary-hover: #1e3a8a;
+}
+
+body.dark {
+  --bg: #020617;
+  --card: #0f172a;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --footer: #ffffff;
+  --primary: #3b82f6;
+  /* Lighter blue for dark mode visibility */
+  --primary-hover: #2563eb;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+
+/* Ensure full height for layout */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

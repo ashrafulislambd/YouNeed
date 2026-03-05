@@ -1,0 +1,335 @@
+﻿Resolving dependencies...
+Downloading packages...
+  characters 1.4.0 (1.4.1 available)
+  cross_file 0.3.5+1 (0.3.5+2 available)
+  ffi 2.1.4 (2.1.5 available)
+  image_picker_android 0.8.13+10 (0.8.13+13 available)
+  image_picker_ios 0.8.13+3 (0.8.13+6 available)
+  lints 6.0.0 (6.1.0 available)
+  matcher 0.12.17 (0.12.18 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.17.0 (1.18.1 available)
+  shared_preferences_android 2.4.18 (2.4.20 available)
+  source_span 1.10.1 (1.10.2 available)
+  test_api 0.7.7 (0.7.9 available)
+Got dependencies!
+12 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Compiling lib\main.dart for the Web...                          
+G:\flutter\bin\flutter.b
+at : Wasm dry run 
+succeeded. Consider 
+building and testing 
+your application with 
+the `--wasm` flag. See 
+docs for more info: http
+s://docs.flutter.dev/pla
+tform-integration/web/wa
+sm
+At line:1 char:1
++ G:\flutter\bin\flutter
+.bat build web 2>&1 | 
+Out-File 
+build_output.txt ...
++ ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo      
+        : NotSpecified  
+  : (Wasm dry run su.   
+ ..ration/web/wasm:S    
+tring) [], RemoteEx    
+ception
+    + FullyQualifiedErr 
+   orId : NativeComman  
+  dError
+ 
+Use --no-wasm-dry-run 
+to disable these 
+warnings.
+Target dart2js failed: 
+ProcessException: 
+Process exited 
+abnormally with exit 
+code 1:
+lib/storefront/applicati
+on/interfaces/product_it
+em_repository.dart:1:8:
+Error: Error when 
+reading 'lib/storefront/
+application/entities/pro
+duct_item.dart': Error 
+reading 'lib/storefront/
+application/entities/pro
+duct_item.dart'  (The 
+system cannot find the 
+path specified)
+import '../entities/prod
+uct_item.dart';
+       ^
+lib/bnpl/application/int
+erfaces/bnpl_repository.
+dart:1:8:
+Error: Error when 
+reading 'lib/bnpl/applic
+ation/entities/bnpl_plan
+.dart': Error reading 'l
+ib/bnpl/application/enti
+ties/bnpl_plan.dart'  
+(The system cannot find 
+the path specified)
+import '../entities/bnpl
+_plan.dart';
+       ^
+lib/storefront/applicati
+on/interfaces/product_it
+em_repository.dart:5:15:
+Error: Type 
+'ProductItem' not found.
+  Future<List<ProductIte
+m>> getProducts();
+              
+^^^^^^^^^^^
+lib/storefront/applicati
+on/interfaces/product_it
+em_repository.dart:6:15:
+Error: Type 
+'ProductItem' not found.
+  Future<List<ProductIte
+m>> getProductsByCategor
+y(String category);
+              
+^^^^^^^^^^^
+lib/storefront/applicati
+on/interfaces/product_it
+em_repository.dart:7:15:
+Error: Type 
+'ProductItem' not found.
+  Future<List<ProductIte
+m>> getProductsBySubCate
+gory(String category, 
+String subCategory);
+              
+^^^^^^^^^^^
+lib/bnpl/application/int
+erfaces/bnpl_repository.
+dart:7:15:
+Error: Type 'BnplPlan' 
+not found.
+  
+Future<List<BnplPlan>> 
+getPlans();
+              ^^^^^^^^
+lib/bnpl/application/int
+erfaces/bnpl_repository.
+dart:10:10:
+Error: Type 
+'UserBnplInfo' not 
+found.
+  Future<UserBnplInfo> 
+getUserInfo();
+         ^^^^^^^^^^^^
+lib/bnpl/application/int
+erfaces/bnpl_repository.
+dart:17:14:
+Error: Type 'BnplPlan' 
+not found.
+    required BnplPlan 
+plan,
+             ^^^^^^^^
+lib/bnpl/application/int
+erfaces/bnpl_repository.
+dart:31:14:
+Error: Type 'BnplPlan' 
+not found.
+    required BnplPlan 
+plan,
+             ^^^^^^^^
+lib/bnpl/application/int
+erfaces/bnpl_repository.
+dart:17:14:
+Error: 'BnplPlan' isn't 
+a type.
+    required BnplPlan 
+plan,
+             ^^^^^^^^
+lib/bnpl/application/int
+erfaces/bnpl_repository.
+dart:31:14:
+Error: 'BnplPlan' isn't 
+a type.
+    required BnplPlan 
+plan,
+             ^^^^^^^^
+Error: Compilation 
+failed.
+  Command: G:\flutter\bi
+n\cache\dart-sdk\bin\dar
+t.exe compile js --platf
+orm-binaries=G:\flutter\
+bin\cache\flutter_web_sd
+k\kernel 
+--invoker=flutter_tool 
+-Ddart.vm.product=true -
+DFLUTTER_VERSION=3.38.5 
+-DFLUTTER_CHANNEL=stable
+ -DFLUTTER_GIT_URL=https
+://github.com/flutter/fl
+utter.git -DFLUTTER_FRAM
+EWORK_REVISION=f6ff1529f
+d -DFLUTTER_ENGINE_REVIS
+ION=1527ae0ec5 -DFLUTTER
+_DART_VERSION=3.10.4 -DF
+LUTTER_WEB_USE_SKIA=true
+ -DFLUTTER_WEB_USE_SKWAS
+M=false -DFLUTTER_WEB_CA
+NVASKIT_URL=https://www.
+gstatic.com/flutter-canv
+askit/1527ae0ec577a4ef50
+e65f6fefcfc1326707d9bf/ 
+--native-null-assertions
+ --no-source-maps -O4 
+--minify -o G:\SWE_Proje
+ct\mahdeen\mobile_app\.d
+art_tool\flutter_build\0
+9dc38379506441c6a52c0c21
+ee51e06\app.dill --packa
+ges=G:\SWE_Project\mahde
+en\mobile_app\.dart_tool
+\package_config.json 
+--cfe-only G:\SWE_Projec
+t\mahdeen\mobile_app\.da
+rt_tool\flutter_build\09
+dc38379506441c6a52c0c21e
+e51e06\main.dart
+#0      RunResult.throwE
+xception (package:flutte
+r_tools/src/base/process
+.dart:153:5)
+#1      _DefaultProcessU
+tils.run (package:flutte
+r_tools/src/base/process
+.dart:379:19)
+<asynchronous 
+suspension>
+#2      
+Dart2JSTarget.build (pac
+kage:flutter_tools/src/b
+uild_system/targets/web.
+dart:207:5)
+<asynchronous 
+suspension>
+#3      _BuildInstance._
+invokeInternal (package:
+flutter_tools/src/build_
+system/build_system.dart
+:895:9)
+<asynchronous 
+suspension>
+#4      
+Future.wait.<anonymous 
+closure> (dart:async/fut
+ure.dart:546:21)
+<asynchronous 
+suspension>
+#5      _BuildInstance.i
+nvokeTarget (package:flu
+tter_tools/src/build_sys
+tem/build_system.dart:83
+3:32)
+<asynchronous 
+suspension>
+#6      
+Future.wait.<anonymous 
+closure> (dart:async/fut
+ure.dart:546:21)
+<asynchronous 
+suspension>
+#7      _BuildInstance.i
+nvokeTarget (package:flu
+tter_tools/src/build_sys
+tem/build_system.dart:83
+3:32)
+<asynchronous 
+suspension>
+#8      FlutterBuildSyst
+em.build (package:flutte
+r_tools/src/build_system
+/build_system.dart:653:1
+6)
+<asynchronous 
+suspension>
+#9      
+WebBuilder.buildWeb (pac
+kage:flutter_tools/src/w
+eb/compile.dart:94:34)
+<asynchronous 
+suspension>
+#10     BuildWebCommand.
+runCommand (package:flut
+ter_tools/src/commands/b
+uild_web.dart:296:5)
+<asynchronous 
+suspension>
+#11     FlutterCommand.r
+un.<anonymous closure> (
+package:flutter_tools/sr
+c/runner/flutter_command
+.dart:1559:27)
+<asynchronous 
+suspension>
+#12     AppContext.run.<
+anonymous closure> (pack
+age:flutter_tools/src/ba
+se/context.dart:154:19)
+<asynchronous 
+suspension>
+#13     CommandRunner.ru
+nCommand (package:args/c
+ommand_runner.dart:212:1
+3)
+<asynchronous 
+suspension>
+#14     FlutterCommandRu
+nner.runCommand.<anonymo
+us closure> (package:flu
+tter_tools/src/runner/fl
+utter_command_runner.dar
+t:487:9)
+<asynchronous 
+suspension>
+#15     AppContext.run.<
+anonymous closure> (pack
+age:flutter_tools/src/ba
+se/context.dart:154:19)
+<asynchronous 
+suspension>
+#16     FlutterCommandRu
+nner.runCommand (package
+:flutter_tools/src/runne
+r/flutter_command_runner
+.dart:422:5)
+<asynchronous 
+suspension>
+#17     run.<anonymous 
+closure>.<anonymous 
+closure> (package:flutte
+r_tools/runner.dart:104:
+11)
+<asynchronous 
+suspension>
+#18     AppContext.run.<
+anonymous closure> (pack
+age:flutter_tools/src/ba
+se/context.dart:154:19)
+<asynchronous 
+suspension>
+#19     main (package:fl
+utter_tools/executable.d
+art:103:3)
+<asynchronous 
+suspension>
+
+Compiling lib\main.dart for the Web...                             38.7s
+Error: Failed to 
+compile application for 
+the Web.

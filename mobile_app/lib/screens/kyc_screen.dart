@@ -1,0 +1,787 @@
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import '../services/kyc_service.dart';
+import '../theme_provider.dart';
+
+class KycScreen extends StatefulWidget {
+  const KycScreen({super.key});
+
+  @override
+  State<KycScreen> createState() => _KycScreenState();
+}
+
+class _KycScreenState extends State<KycScreen> {
+  final KYCService _kycService = KYCService();
+  final ImagePicker _picker = ImagePicker();
+  
+  XFile? _nidImage;
+  final _nidController = TextEditingController();
+  
+  String _secondaryType = 'PASSPORT';
+  XFile? _secondaryImage;
+  final _secondaryController = TextEditingController();
+
+  bool _isLoading = false;
+  bool _isSubmitting = false;
+  Map<String, dynamic>? _kycStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadKYCStatus();
+  }
+
+  @override
+  void dispose() {
+    _nidController.dispose();
+    _secondaryController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadKYCStatus() async {
+    setState(() => _isLoading = true);
+    final result = await _kycService.getKYCStatus();
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        if (result['success'] == true) {
+          _kycStatus = result['data'];
+        }
+      });
+    }
+  }
+
+  Future<void> _pickImage(bool isNid) async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+      
+      if (image != null) {
+        setState(() {
+          if (isNid) {
+            _nidImage = image;
+          } else {
+            _secondaryImage = image;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to pick image: ${e.toString()}'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _submitKYC() async {
+    // Validation
+    if (_nidImage == null) {
+      _showError('Please upload National ID image');
+      return;
+    }
+    if (_nidController.text.isEmpty) {
+      _showError('Please enter National ID number');
+      return;
+    }
+    if (_secondaryImage == null) {
+      _showError('Please upload $_secondaryType image');
+      return;
+    }
+    if (_secondaryController.text.isEmpty) {
+      _showError('Please enter $_secondaryType number');
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    // Prepare data
+    final nidBytes = await _nidImage!.readAsBytes();
+    final secondaryBytes = await _secondaryImage!.readAsBytes();
+
+    // Submit as a single request (Mocked service will handle this)
+    // We will update the service to accept a list or just mock it here
+    final result = await _kycService.submitDualKYC(
+      nidParams: {
+        'type': 'NID',
+        'number': _nidController.text,
+        'bytes': nidBytes,
+        'filename': _nidImage!.name,
+      },
+      secondaryParams: {
+        'type': _secondaryType,
+        'number': _secondaryController.text,
+        'bytes': secondaryBytes,
+        'filename': _secondaryImage!.name,
+      }
+    );
+
+    if (mounted) {
+      setState(() => _isSubmitting = false);
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'KYC submitted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadKYCStatus();
+        _clearForm();
+      } else {
+        _showError(result['message'] ?? 'KYC submission failed');
+      }
+    }
+  }
+
+  void _showError(String message) {
+     ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+  }
+
+  void _clearForm() {
+    setState(() {
+      _nidImage = null;
+      _nidController.clear();
+      _secondaryImage = null;
+      _secondaryController.clear();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF9FAFB);
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      // AppBar remains same (omitted for brevity in replacement, but kept in context via replacement ranges)
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Container(
+          margin: const EdgeInsets.only(left: 16),
+          decoration: BoxDecoration(
+            color: cardColor,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 18),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        title: Text(
+          'Verification',
+          style: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: cardColor,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(Icons.storefront, color: Colors.teal, size: 20),
+              tooltip: 'Products',
+              onPressed: () => Navigator.pushNamed(context, '/products'),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: cardColor,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(Icons.shopping_cart_outlined, color: textColor, size: 20),
+              tooltip: 'Due Payments',
+              onPressed: () => Navigator.pushNamed(context, '/due-payment'),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: cardColor,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(Icons.receipt_long_rounded, color: textColor, size: 20),
+              tooltip: 'Transactions',
+              onPressed: () => Navigator.pushNamed(context, '/'),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: cardColor,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(Icons.credit_card_rounded, color: textColor, size: 20),
+              tooltip: 'Credit Status',
+              onPressed: () => Navigator.pushNamed(context, '/credit'),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: cardColor,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(Icons.person_outline_rounded, color: textColor, size: 20),
+              tooltip: 'Profile / Register',
+              onPressed: () => Navigator.pushNamed(context, '/register'),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: cardColor,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded, color: textColor, size: 20),
+              onPressed: () {
+                 themeNotifier.value = isDark ? ThemeMode.light : ThemeMode.dark;
+              },
+            ),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Complete your\nKYC Verification',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: textColor,
+                height: 1.2,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Submission of both documents is mandatory.',
+              style: TextStyle(
+                fontSize: 15,
+                color: isDark ? Colors.white70 : Colors.grey[600],
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 32),
+            
+            // Status Card
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (_kycStatus != null)
+              _buildStatusCard(_kycStatus!, isDark, cardColor)
+            else
+              _buildEmptyStatusCard(isDark, cardColor),
+            
+            const SizedBox(height: 32),
+            
+            // --- DOCUMENT 1: NATIONAL ID ---
+            _buildSectionHeader('1. National ID (Mandatory)', textColor),
+            const SizedBox(height: 16),
+            _buildUploadSection(
+              context: context,
+              title: 'National ID',
+              controller: _nidController,
+              image: _nidImage,
+              onImagePick: () => _pickImage(true),
+              isDark: isDark,
+              cardColor: cardColor,
+              textColor: textColor,
+              isFixedType: true,
+            ),
+
+            const SizedBox(height: 32),
+
+            // --- DOCUMENT 2: SECONDARY ---
+            _buildSectionHeader('2. Supporting Document (Mandatory)', textColor),
+            const SizedBox(height: 16),
+            // Type Selector
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                   _buildDocumentTypeChip('PASSPORT', 'Passport', Icons.card_travel_outlined, isDark, cardColor, textColor),
+                   _buildDocumentTypeChip('WORKPLACE', 'Work ID', Icons.work_outline_rounded, isDark, cardColor, textColor),
+                   _buildDocumentTypeChip('TIN', 'TIN Cert', Icons.assignment_outlined, isDark, cardColor, textColor),
+                   _buildDocumentTypeChip('STUDENT', 'Student ID', Icons.school_outlined, isDark, cardColor, textColor),
+                ],
+              ),
+            ),
+
+            _buildUploadSection(
+              context: context,
+              title: _secondaryType,
+              controller: _secondaryController,
+              image: _secondaryImage,
+              onImagePick: () => _pickImage(false),
+              isDark: isDark,
+              cardColor: cardColor,
+              textColor: textColor,
+              isFixedType: false,
+            ),
+            
+            const SizedBox(height: 32),
+            
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _isSubmitting ? null : _submitKYC,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDark ? Colors.white : Colors.black,
+                  foregroundColor: isDark ? Colors.black : Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Submit KYC Application',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, Color color) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: color,
+      ),
+    );
+  }
+
+  Widget _buildUploadSection({
+    required BuildContext context,
+    required String title,
+    required TextEditingController controller,
+    required XFile? image,
+    required VoidCallback onImagePick,
+    required bool isDark,
+    required Color cardColor,
+    required Color textColor,
+    required bool isFixedType,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.3) : Colors.grey.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (isFixedType) ...[
+             Row(
+               children: [
+                 Icon(Icons.badge_outlined, color: textColor),
+                 const SizedBox(width: 8),
+                 Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
+               ],
+             ),
+             const SizedBox(height: 20),
+          ],
+          
+          TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: '$title Number',
+              labelStyle: TextStyle(color: isDark ? Colors.white60 : Colors.black45),
+              filled: true,
+              fillColor: isDark ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.05),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            style: TextStyle(color: textColor),
+          ),
+          const SizedBox(height: 16),
+            GestureDetector(
+              onTap: onImagePick,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.black12 : Colors.grey.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? Colors.white24 : Colors.grey.withOpacity(0.2),
+                    style: BorderStyle.solid,
+                    width: 2,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    if (image != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          image.path,
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    else
+                      Column(
+                        children: [
+                          Icon(
+                            Icons.cloud_upload_outlined,
+                            size: 40,
+                            color: isDark ? Colors.white38 : Colors.grey[400],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Upload $title Image',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: textColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusCard(Map<String, dynamic> status, bool isDark, Color cardColor) {
+     return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: _getStatusColors(status['status'] ?? 'PENDING', isDark),
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: _getStatusColor(status['status'] ?? 'PENDING').withOpacity(isDark ? 0.3 : 0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: cardColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _getStatusIcon(status['status'] ?? 'PENDING'),
+                color: _getStatusColor(status['status'] ?? 'PENDING'),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Status',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.white60 : Colors.black54,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    status['status'] ?? 'Unknown',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: _getStatusColor(status['status'] ?? 'PENDING'),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+  }
+
+  Widget _buildEmptyStatusCard(bool isDark, Color cardColor) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark 
+                ? [Colors.orange.withOpacity(0.15), Colors.orange.withOpacity(0.05)]
+                : [Colors.orange.withOpacity(0.1), Colors.orange.withOpacity(0.05)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.orange.withOpacity(isDark ? 0.3 : 0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: cardColor,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.pending_actions_rounded, color: Colors.orange),
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Status',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDark ? Colors.white60 : Colors.black54,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Text(
+                  'Not Submitted',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.deepOrange,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+  }
+
+  Widget _buildDocumentTypeChip(String type, String label, IconData icon, bool isDark, Color cardColor, Color textColor) {
+    if (type == 'NID') return const SizedBox.shrink(); // Hide NID from usage here as it is fixed
+    final isSelected = _secondaryType == type;
+    return GestureDetector(
+      onTap: () => setState(() => _secondaryType = type),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isDark ? Colors.white : Colors.black)
+              : (isDark ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.05)),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? (isDark ? Colors.white : Colors.black)
+                : (isDark ? Colors.white24 : Colors.grey.withOpacity(0.2)),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min, 
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected
+                  ? (isDark ? Colors.black : Colors.white)
+                  : textColor,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isSelected
+                    ? (isDark ? Colors.black : Colors.white)
+                    : textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Deprecated: _buildDocumentTypeButton removed in favor of Chip style for more items
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'APPROVED':
+        return Colors.green;
+      case 'REJECTED':
+        return Colors.red;
+      case 'PENDING':
+      default:
+        return Colors.orange;
+    }
+  }
+
+  List<Color> _getStatusColors(String status, bool isDark) {
+    final color = _getStatusColor(status);
+    return isDark
+        ? [color.withOpacity(0.15), color.withOpacity(0.05)]
+        : [color.withOpacity(0.1), color.withOpacity(0.05)];
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'APPROVED':
+        return Icons.check_circle_outline_rounded;
+      case 'REJECTED':
+        return Icons.cancel_outlined;
+      case 'PENDING':
+      default:
+        return Icons.pending_actions_rounded;
+    }
+  }
+
+  Widget _buildUploadCard({
+    required String title,
+    required String description,
+    required IconData icon,
+    required bool isUploaded,
+    required bool isDark,
+    required Color cardColor,
+    required Color textColor,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.3) : Colors.grey.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {},
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: isUploaded 
+                        ? (isDark ? const Color(0xFF1B3320) : const Color(0xFFE8F5E9))
+                        : (isDark ? Colors.black12 : const Color(0xFFF5F5F5)),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    isUploaded ? Icons.check_circle_outline_rounded : icon,
+                    color: isUploaded ? const Color(0xFF4CAF50) : (isDark ? Colors.white54 : Colors.grey[600]),
+                    size: 26,
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        description,
+                        style: TextStyle(
+                          color: isDark ? Colors.white38 : Colors.grey[500],
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isUploaded ? cardColor : (isDark ? Colors.white : Colors.black),
+                    borderRadius: BorderRadius.circular(10),
+                    border: isUploaded ? Border.all(color: isDark ? Colors.white24 : Colors.grey.withOpacity(0.2)) : null,
+                  ),
+                  child: Text(
+                    isUploaded ? 'Edit' : 'Upload',
+                    style: TextStyle(
+                      color: isUploaded ? textColor : (isDark ? Colors.black : Colors.white),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
