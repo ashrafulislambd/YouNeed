@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # qr_request_money
 
 A new Flutter project.
@@ -16,6 +17,8 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 =======
+=======
+>>>>>>> c7ed1c71804bae524d84e5f1bbb223b3df7cf327
 # YouNeed Project
 
 This repository contains the source code for the YouNeed application, including backend microservices and frontend applications.
@@ -74,4 +77,25 @@ Once the services are running, you can verify they are working by checking the h
 
 ### API Documentation
 Each service exposes its own API. Refer to the individual service directories for more details (if available).
+<<<<<<< HEAD
 >>>>>>> 3c4130a54ee16d7db81b8d459b809b8221944b4b
+=======
+=======
+# flutter_qr_app
+
+A new Flutter project.
+
+## Getting Started
+
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
+>>>>>>> 7b78c69 (feat: Add QR code payment Flutter app)
+>>>>>>> c7ed1c71804bae524d84e5f1bbb223b3df7cf327
