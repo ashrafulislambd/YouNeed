@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import Login from './components/admin/Login';
+import { ThemeProvider } from './context/ThemeContext';
+import Login from './components/Login';
 import Dashboard from './components/admin/Dashboard';
-import MerchantLogin from './components/merchant/MerchantLogin';
 import MerchantLogout from './components/merchant/MerchantLogout';
 import MerchantLayout from './components/merchant/MerchantLayout';
 import MerchantDashboard from './components/merchant/MerchantDashboard';
@@ -19,13 +19,14 @@ import './App.css';
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <ThemeProvider>
+        <Router>
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
 
           {/* Merchant Routes */}
-          <Route path="/merchant/login" element={<MerchantLogin />} />
+          <Route path="/merchant/login" element={<Navigate to="/" replace />} />
           <Route path="/merchant/logout" element={<MerchantLogout />} />
           <Route path="/merchant" element={<MerchantPrivateRoute />}>
             <Route element={<MerchantLayout />}>
@@ -43,6 +44,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
+      </ThemeProvider>
     </AuthProvider>
   );
 }
