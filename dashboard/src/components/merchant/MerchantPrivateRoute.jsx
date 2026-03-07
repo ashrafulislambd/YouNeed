@@ -6,7 +6,7 @@ const MerchantPrivateRoute = () => {
     const { isAuthenticated, userRole } = useAuth();
 
     if (!isAuthenticated || userRole !== 'merchant') {
-        return <Navigate to="/merchant/login" replace />;
+        return <Navigate to="/" replace />;
     }
 
     return <Outlet />;

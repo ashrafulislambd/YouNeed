@@ -6,11 +6,11 @@ import LogoutConfirmation from './LogoutConfirmation';
 import DashboardHome from './DashboardHome';
 import Sidebar from './Sidebar';
 import ValidatePrescription from './ValidatePrescription';
+import ThemeToggle from '../ThemeToggle';
 
 const Dashboard = () => {
     const navigate = useNavigate();
     const { isAuthenticated, logout } = useAuth();
-    const [darkMode, setDarkMode] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [currentView, setCurrentView] = useState('home');
@@ -18,18 +18,6 @@ const Dashboard = () => {
     if (!isAuthenticated) {
         return <Navigate to="/" replace />;
     }
-
-    useEffect(() => {
-        if (darkMode) {
-            document.body.classList.add('dark');
-        } else {
-            document.body.classList.remove('dark');
-        }
-    }, [darkMode]);
-
-    const toggleMode = () => {
-        setDarkMode(!darkMode);
-    };
 
     const handleLogoutClick = () => {
         setShowLogoutConfirm(true);
@@ -55,9 +43,7 @@ const Dashboard = () => {
                 <div className="menu" onClick={toggleSidebar}>☰</div>
                 <h3 style={{ margin: 0 }}>Admin Dashboard</h3>
                 <div className="header-right">
-                    <div className="toggle" onClick={toggleMode}>
-                        {darkMode ? '☀️' : '🌙'}
-                    </div>
+                    <ThemeToggle />
                     <button className="logout-btn-header" onClick={handleLogoutClick}>Logout</button>
                 </div>
             </header>
