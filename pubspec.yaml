@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+name: qr_request_money
+=======
 name: flutter_qr_app
+>>>>>>> c7ed1c71804bae524d84e5f1bbb223b3df7cf327
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -34,7 +38,10 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+<<<<<<< HEAD
+=======
   provider: ^6.1.5+1
+>>>>>>> c7ed1c71804bae524d84e5f1bbb223b3df7cf327
 
 dev_dependencies:
   flutter_test:
